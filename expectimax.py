@@ -28,14 +28,40 @@ def expvalue(state):
     v += p*maxvalue(successor)
   return v
 
-class GameState:
+
+class CardState:
+  import montecarlo
+  def __init__(self, deck, myhand = [], shared = []):
+    self.deck = deck
+    self.myhand = myhand
+    self.shared = shared
+
+  def deal_hand(self):
+    self.myhand = deck.deal_hand()
+
+  def deal_card(self):
+    if len(shared) < 3:
+      shared = deck.deal_cards(3)
+    else:
+      shared.append(deck.deal_cards(1))
+
+  def get_probs(self):
+    return winprob(myhand, shared)
+
+class BetState:
   def __init__(self, actions, betround, myturn):
     self.actions = actions # actions[i] = [(CHECK, 0), (CHECK, 0)]
     self.betround = betround # which round of betting. 0 =pre, 1 =post, 2 = turn, 3 = river
     self.myturn = myturn # is it my turn
+    self.deck = deck
+    self.myhand = myhand
+    self.shared = shared
 
   def __repr__(self):
-    return "<GameState actions:%s betround:%s myturn: %s>" % (self.actions, self.betround, str(self.myturn))
+    return "<BetState actions:%s \n betround:%s \n myturn: %s>" % (self.actions, self.betround, str(self.myturn))
+
+  def deal_card(self):
+    return (not len(self.actions) == self.betround + 1)
 
   def isterminal(self):
     # if last action was a fold
@@ -105,12 +131,12 @@ class GameState:
       for step in self.next_legal():
         actions = copy.deepcopy(self.actions)
         actions.append([step])
-        successors.append(GameState(actions, self.betround + 1, not self.myturn))
+        successors.append(BetState(actions, self.betround + 1, not self.myturn))
     else:
       for step in self.next_legal():
         actions = copy.deepcopy(self.actions)
         actions[-1].append(step)
-        successors.append(GameState(actions, self.betround, not self.myturn))
+        successors.append(BetState(actions, self.betround, not self.myturn))
     return successors
 
 

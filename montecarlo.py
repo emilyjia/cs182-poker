@@ -164,28 +164,21 @@ class Deck:
         (them_a, them_b, them_c) = self.best_hand(them, shared)
         return (you_a < them_a) or (you_a == them_a and you_b < them_b) or (you_a == them_a and you_b == them_b and you_c < them_c)
 
-
-test_deck = Deck()
-# me = test_deck.deal_hand()
 me = [(10, 'club'), (8, 'diamond')]
-win = 0
-lose = 0
-tie = 0
-for i in range(1000):
-    deck = Deck(me)
-    you = deck.deal_hand()
-    # print you
-    river = deck.deal_river()
-    # print river
-    if deck.you_better(me, you, river):
-        win += 1
-        # print "better"
-    elif deck.you_worse(me, you, river):
-        lose += 1
-        # print "worse"
-    else:
-        tie += 1
-        # print "tie"
 
-print win, lose, tie
-print 1.0*win/(win+lose+tie)
+def winprob(me, shared):
+    win = 0
+    lose = 0
+    tie = 0
+    for i in range(1000):
+        deck = Deck(me + shared)
+        you = deck.deal_hand()
+        while len(shared) < 5:
+            shared += deck.deal_cards(1)
+        if deck.you_better(me, you, shared):
+            win += 1
+        elif deck.you_worse(me, you, shared):
+            lose += 1
+        else:
+            tie += 1
+    return (win/1000.0, tie/1000.0, lose/1000.0)
