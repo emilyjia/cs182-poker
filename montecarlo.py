@@ -4,7 +4,7 @@
 
 import random
 from collections import Counter
-
+import copy
 class Deck:
 # deck class: ranks are 2-14 (14 = ace)
     def __init__(self, remove_lst = []):
@@ -166,6 +166,8 @@ class Deck:
 
 me = [(10, 'club'), (8, 'diamond')]
 
+# determines probability of winning
+
 def winprob(me, shared):
     win = 0
     lose = 0
@@ -173,11 +175,12 @@ def winprob(me, shared):
     for i in range(1000):
         deck = Deck(me + shared)
         you = deck.deal_hand()
-        while len(shared) < 5:
-            shared += deck.deal_cards(1)
-        if deck.you_better(me, you, shared):
+        shared_copy = copy.deepcopy(shared)
+        while len(shared_copy) < 5:
+            shared_copy += deck.deal_cards(1)
+        if deck.you_better(me, you, shared_copy):
             win += 1
-        elif deck.you_worse(me, you, shared):
+        elif deck.you_worse(me, you, shared_copy):
             lose += 1
         else:
             tie += 1
