@@ -10,21 +10,25 @@ class GameState:
     self.betstate = betstate
 
   # deals card if betstate
-  def get_successors(self):
+  def get_successors(self, next_move = []):
     successors = []
-    for successor in self.betstate.get_successors():
+    if next_move == []:
+      bet_successors = self.betstate.get_successors()
+    else:
+      bet_successors = self.betstate.get_successors([next_move])
+    for successor in bet_successors:
       cardstatecopy = copy.deepcopy(self.cardstate)
       if successor.deal_card():
         cardstatecopy.deal_card()
-      successors.append(GameState(self.cardstate, successor))
+      successors.append(GameState(cardstatecopy, successor))
     return successors
 
   def get_value(self):
-    if self.betstate.showdown():
-      return (self.betstate.get_pot()*self.cardstate.get_probs()[0] + 0.5*self.betstate.get_pot()*self.cardstate.get_probs()[1] - self.betstate.mybet)
+    if self.betstate.showdown() or not self.betstate.isterminal():
+      return ((self.betstate.get_pot() + 10)*self.cardstate.get_probs()[0] + 0.5*(self.betstate.get_pot() + 10)*self.cardstate.get_probs()[1] - self.betstate.mybet)
     elif self.betstate.isterminal():
       if self.betstate.myturn:
-        return self.betstate.get_pot() - self.betstate.mybet
+        return self.betstate.get_pot() - self.betstate.mybet + 10
       else:
         return -self.betstate.mybet
 
@@ -45,10 +49,10 @@ class CardState:
     self.myhand = self.deck.deal_hand()
 
   def deal_card(self):
-    if len(shared) < 3:
-      shared = self.deck.deal_cards(3)
-    else:
-      shared.append(self.deck.deal_cards(1))
+    if len(self.shared) < 3:
+      self.shared = self.deck.deal_cards(3)
+    elif len(self.shared) < 5:
+      self.shared += self.deck.deal_cards(1)
 
   def get_probs(self): # gives probability of win
     return winprob(self.myhand, self. shared)
@@ -66,7 +70,10 @@ class BetState:
     return "<BetState actions:%s \n betround:%s \n myturn: %s \n mybet: %s>" % (self.actions, self.betround, str(self.myturn), self.mybet)
 
   def deal_card(self):
-    return (not len(self.actions) == self.betround + 1)
+    if len(self.actions) > 0:
+      if len(self.actions[-1]) >= 2:
+        return self.actions[-1][-1][0] == "CALL" or (self.actions[-1][-1][0] == "CHECK" and self.actions[-1][-1][-1] == "CHECK")
+
 
   def showdown(self):
     # if we are in last round
@@ -130,13 +137,16 @@ class BetState:
         if last_action[0] == "RAISE":
           return call_fold
 
-  def get_successors(self):
+  def get_successors(self, nextmove = []):
+    if nextmove == []:
+      nextmove = self.next_legal()
     successors = []
     # need to determine if a new round of betting has started
     # yes if last action was a call, or check/check
 
     if len(self.actions) == 0:
-      for step in self.next_legal():
+
+      for step in nextmove:
         successors.append(BetState([[step]], self.betround, not self.myturn, step[1]))
       return successors
     last_action = self.actions[self.betround][-1][0]
@@ -145,7 +155,7 @@ class BetState:
       sec_last_action = self.actions[self.betround][-2][0]
     betround = None
     if last_action == "CALL" or (last_action == "CHECK" and sec_last_action == "CHECK"):
-      for step in self.next_legal():
+      for step in nextmove:
         actions = copy.deepcopy(self.actions)
         actions.append([step])
         newmybet = None
@@ -155,7 +165,7 @@ class BetState:
           newmybet = self.mybet
         successors.append(BetState(actions, self.betround + 1, not self.myturn, newmybet))
     else:
-      for step in self.next_legal():
+      for step in nextmove:
         actions = copy.deepcopy(self.actions)
         actions[-1].append(step)
         if self.myturn:
