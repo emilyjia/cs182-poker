@@ -1,7 +1,19 @@
-from expectimax import BetState
+from expectimax import *
+from montecarlo import *
+from state import *
 
 
-from montecarlo import winprob
+def expectitest():
+  deck = Deck()
+  cardstate = CardState(deck)
+  cardstate.deal_hand()
+  print cardstate.myhand
+  betstate = BetState()
+  gamestate = GameState(cardstate, betstate)
+  print getExpectiAction(gamestate)
+
+
+
 
 
 
@@ -14,18 +26,24 @@ def bettest():
 
   # first action check
   gs = BetState(actions, betround, myturn, 0)
-  assert(gs.next_legal() == [("CHECK", 0), ("BET", 10)])
+  print gs
   print gs.get_successors()
+  for successor in gs.get_successors():
+    print successor.get_successors()
+
+
+  # assert(gs.next_legal() == [("CHECK", 0), ("BET", 10)])
+
 
   myturn = True
   gs = BetState(actions, betround, myturn, 0)
-  assert(gs.next_legal() == [("CHECK", 0)] + [("BET", 5*x + 5) for x in range(20)])
+  # assert(gs.next_legal() == [("CHECK", 0)] + [("BET", 5*x + 5) for x in range(20)])
 
   # first action bet
   myturn = False
   actions = [[("BET", 5)]]
   gs = BetState(actions, betround, myturn, 0)
-  assert(gs.next_legal() == [("CALL", 5), ("FOLD", 0), ("RAISE", 15)])
+  # assert(gs.next_legal() == [("CALL", 5), ("FOLD", 0), ("RAISE", 15)])
 
   actions = [[("CHECK", 0), ("BET", 5)]]
   gs = BetState(actions, betround, myturn, 0)
@@ -45,4 +63,4 @@ def bettest():
   # print gs.get_successors()
 
 
-bettest()
+expectitest()

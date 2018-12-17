@@ -1,9 +1,11 @@
 import state
 
-def getExpectiAction(self, startState):
+def getExpectiAction(startState):
   # pick the successor tha has the highest exp_value
-  def max_value(gameState):
+  def max_value(gameState, get_action):
     if gameState.is_terminal():
+      print gameState.betstate
+      print gameState.get_value()
       return gameState.get_value()
     else:
       v = -10000
@@ -14,7 +16,7 @@ def getExpectiAction(self, startState):
         if val_succ > v:
           v = val_succ
           best = action
-    if gameState = startState:
+    if get_action:
       return best
     else:
       return v
@@ -33,12 +35,12 @@ def getExpectiAction(self, startState):
       for successor in gameState.get_successors():
         action = successor.betstate.actions[-1][-1]
         if action == "FOLD":
-          v += 0.1*max_value(successor)
+          v += 0.1*max_value(successor, False)
         else:
-          v += prob*max_value(successor)
+          v += prob*max_value(successor, False)
       return v
 
-  return max_value(startState)
+  return max_value(startState, True)
 
 
 
