@@ -12,15 +12,15 @@ def simul(mybot, opponent, games):
     deck = Deck()
     cardstate = CardState(deck)
     cardstate.deal_hand()
-    # print "my cards"
-    # print cardstate.myhand
+    print "my cards"
+    print cardstate.myhand
     betstate = BetState()
     gamestate = GameState(cardstate, betstate)
     depth = 2
     while not gamestate.is_terminal():
       action = None
-      # print "shared"
-      # print gamestate.cardstate.shared
+      print "shared"
+      print gamestate.cardstate.shared
       if gamestate.betstate.myturn:
         action = mybot.get_action(gamestate, depth)
         print "my action " + str(action)
@@ -31,6 +31,7 @@ def simul(mybot, opponent, games):
         print "opponent action " + str(action)
         gamestate = gamestate.get_successors(action)[0]
         # print gamestate.betstate
+    print gamestate.get_value()
     mybot_pnl.append(gamestate.get_value())
     print mybot_pnl
     print "==============="
