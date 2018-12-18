@@ -72,7 +72,7 @@ class BetState:
   def deal_card(self):
     if len(self.actions) > 0:
       if len(self.actions[-1]) >= 2:
-        return self.actions[-1][-1][0] == "CALL" or (self.actions[-1][-1][0] == "CHECK" and self.actions[-1][-1][-1] == "CHECK")
+        return self.actions[-1][-1][0] == "CALL" or (self.actions[-1][-1][0] == "CHECK" and self.actions[-1][-2][0] == "CHECK")
 
 
   def showdown(self):
@@ -174,14 +174,6 @@ class BetState:
           newmybet = self.mybet
         successors.append(BetState(actions, self.betround, not self.myturn, newmybet))
     return successors
-
-
-
-
-
-
-
-
 
 
 

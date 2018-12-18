@@ -25,15 +25,13 @@ def simul(mybot, opponent, games):
         action = mybot.get_action(gamestate, depth)
         print "my action " + str(action)
         gamestate = gamestate.get_successors(action)[0]
-        # print gamestate.betstate
+        print gamestate.betstate
       else:
         action = opponent.get_action(gamestate, depth)
         print "opponent action " + str(action)
         gamestate = gamestate.get_successors(action)[0]
-        # print gamestate.betstate
+        print gamestate.betstate
     print gamestate.get_value()
     mybot_pnl.append(gamestate.get_value())
     print mybot_pnl
     print "==============="
-
-

@@ -34,32 +34,30 @@ class Deck:
     def is_royalflush(self, top):
         hand = [top[i][0] for i in range(len(top))]
         hand.sort()
-        if hand == [10,11,12,13,14]:
-            return True, 14, 13
-        return False, 0, 0
+        if hand[2:] == [10,11,12,13,14]:
+            return True, 14, 13, 12, 11, 10
+        return False, 0, 0, 0, 0, 0
 
     def is_straightflush(self,top):
-        hand = [top[i][0] for i in range(len(top))]
-        hand.sort()
-        return ((self.is_straight(top)[0] and self.is_flush(top)[0]), hand[-1], hand[-2])
+        return ((self.is_straight(top)[0] and self.is_flush(top)[0]), self.is_straight(top)[1], self.is_straight(top)[2], self.is_straight(top)[3], self.is_straight(top)[4], self.is_straight(top)[5])
 
     def is_fourkind(self,top):
         hand = [top[i][0] for i in range(len(top))]
         hand.sort()
-        if hand.count(hand[0]) == 4:
-            return True, hand[0], hand[-1]
-        elif hand.count(hand[-1]) == 4:
-            return True, hand[-1], hand[0]
-        return False, 0, 0
+        h = Counter(hand)
+        h = h.most_common(len(hand))
+        if h[0][1] == 4:
+            return True, h[0][0], h[-1][0], h[-2][0], 0, 0
+        return False, 0, 0, 0, 0, 0
 
     def is_fullhouse(self,top):
         hand = [top[i][0] for i in range(len(top))]
         hand.sort()
-        if (hand.count(hand[0]) == 2) and (hand.count(hand[-1]) == 3):
-            return True, hand[-1], hand[0]
-        elif (hand.count(hand[0]) == 3) and (hand.count(hand[-1]) == 2):
-            return True, hand[0], hand[-1]
-        return False, 0, 0
+        h = Counter(hand)
+        h = h.most_common(len(hand))
+        if h[0][1] == 3 and h[1][1] == 2:
+            return True, h[0][0], h[1][0], h[-1][0], h[-2][0], h[-3][0]
+        return False, 0, 0, 0, 0, 0
 
     def is_flush(self,top):
         hand_suits = [top[i][1] for i in range(len(top))]
@@ -67,43 +65,53 @@ class Deck:
         h = h.most_common(1)
 
         if h[0][1] == 5:
-            hand = [top[i][0] for i in range(len(top))]
+            hand = []
+            for i in range(len(top)):
+                if top[i][1] == h[0][0]:
+                    hand += [top[i][0]]
             hand.sort()
-            return True, hand[-1], hand[-2]
-        return False, 0, 0
+            return True, hand[-1], hand[-2], hand[-3], hand[-4], hand[-5]
+        return False, 0, 0, 0, 0, 0
 
     def is_straight(self,top):
         hand = [top[i][0] for i in range(len(top))]
         hand.sort()
-        for i in range(len(hand)-1):
-            if hand[i+1] != (hand[i] + 1): return False, 0, 0
-        return True, max(hand), 0
+        for j in range(3):
+            temp = True
+            i = 0
+            for i in range(4):
+                if hand[j+i+1] != (hand[j+i] + 1): temp = False
+            if temp == True: return True, hand[j+4], hand[j+3], hand[j+2], hand[j+1], hand[j]
+        return False, 0, 0, 0, 0, 0
 
+    # error when i try h[-4][0] as last element, not sure if that's a problem...
     def is_threekind(self,top):
         hand = [top[i][0] for i in range(len(top))]
+        hand.sort()
         h = Counter(hand)
-        h = h.most_common(5)
-        if h[0][1] == 3: return True, h[0][0], h[1][0]
-        return False, 0, 0
+        h = h.most_common(len(top))
+        if h[0][1] == 3: return True, h[0][0], h[-1][0], h[-2][0], h[-3][0], 0
+        return False, 0, 0, 0, 0, 0
 
     def is_twopair(self,top):
         hand = [top[i][0] for i in range(len(top))]
+        hand.sort()
         h = Counter(hand)
-        h = h.most_common(2)
+        h = h.most_common(7)
         if h[0][1] == 2 and h[1][1] == 2:
-            return True, max(h[0][0],h[1][0]), min(h[0][0],h[1][0])
+            return True, max(h[0][0],h[1][0]), min(h[0][0],h[1][0]), h[-1][0], h[-2][0], h[-3][0]
         else:
-            return False, 0, 0
+            return False, 0, 0, 0, 0, 0
 
     def is_pair(self,top):
         hand = [top[i][0] for i in range(len(top))]
         hand.sort()
         h = Counter(hand)
-        h = h.most_common(5)
-        if h[0][1] > 1:
-            return True, h[0][0],h[-1][0]
+        h = h.most_common(7)
+        if h[0][1] == 2:
+            return True, h[0][0], h[-1][0], h[-2][0], h[-3][0], h[-4][0]
         else:
-            return False, 0, 0
+            return False, 0, 0, 0, 0, 0
 
     # royal flush = 1
     # straight flush = 2
@@ -121,48 +129,48 @@ class Deck:
 
         cards = you + shared
 
-        a,b,c = self.is_royalflush(cards)
-        if a: return 10, b, c
+        a,b,c,d,e,f = self.is_royalflush(cards)
+        if a: return 10, b, c, d, e, f
 
-        a,b,c = self.is_straightflush(cards)
-        if a: return 9, b, c
+        a,b,c,d,e,f = self.is_straightflush(cards)
+        if a: return 9, b, c, d, e, f
 
-        a,b,c = self.is_fourkind(cards)
-        if a: return 8, b, c
+        a,b,c,d,e,f = self.is_fourkind(cards)
+        if a: return 8, b, c, d, e, f
 
-        a,b,c = self.is_fullhouse(cards)
-        if a: return 7, b, c
+        a,b,c,d,e,f = self.is_fullhouse(cards)
+        if a: return 7, b, c, d, e, f
 
-        a,b,c = self.is_flush(cards)
-        if a: return 6, b, c
+        a,b,c,d,e,f = self.is_flush(cards)
+        if a: return 6, b, c, d, e, f
 
-        a,b,c = self.is_straight(cards)
-        if a: return 5, b, c
+        a,b,c,d,e,f = self.is_straight(cards)
+        if a: return 5, b, c, d, e, f
 
-        a,b,c = self.is_threekind(cards)
-        if a: return 4, b, c
+        a,b,c,d,e,f = self.is_threekind(cards)
+        if a: return 4, b, c, d, e, f
 
-        a,b,c = self.is_twopair(cards)
-        if a: return 3, b, c
+        a,b,c,d,e,f = self.is_twopair(cards)
+        if a: return 3, b, c, d, e, f
 
-        a,b,c = self.is_pair(cards)
-        if a: return 2, b, c
+        a,b,c,d,e,f = self.is_pair(cards)
+        if a: return 2, b, c, d, e, f
 
         hand = [cards[i][0] for i in range(len(cards))]
         hand.sort()
-        return 1, hand[-1], hand[-2]
+        return 1, hand[-1], hand[-2], hand[-3], hand[-4], hand[-5]
 
     def you_better(self, you, them, shared):
         # print self.best_hand(you, shared)
         # print self.best_hand(them, shared)
-        (you_a, you_b, you_c) = self.best_hand(you, shared)
-        (them_a, them_b, them_c) = self.best_hand(them, shared)
-        return (you_a > them_a) or (you_a == them_a and you_b > them_b) or (you_a == them_a and you_b == them_b and you_c > them_c)
+        (you_a, you_b, you_c, you_d, you_e, you_f) = self.best_hand(you, shared)
+        (them_a, them_b, them_c, them_d, them_e, them_f) = self.best_hand(them, shared)
+        return (you_a, you_b, you_c, you_d, you_e, you_f) > (them_a, them_b, them_c, them_d, them_e, them_f)
 
     def you_worse(self, you, them, shared):
-        (you_a, you_b, you_c) = self.best_hand(you, shared)
-        (them_a, them_b, them_c) = self.best_hand(them, shared)
-        return (you_a < them_a) or (you_a == them_a and you_b < them_b) or (you_a == them_a and you_b == them_b and you_c < them_c)
+        (you_a, you_b, you_c, you_d, you_e, you_f) = self.best_hand(you, shared)
+        (them_a, them_b, them_c, them_d, them_e, them_f) = self.best_hand(them, shared)
+        return (you_a, you_b, you_c, you_d, you_e, you_f) < (them_a, them_b, them_c, them_d, them_e, them_f)
 
 me = [(10, 'club'), (8, 'diamond')]
 
