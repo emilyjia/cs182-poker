@@ -25,12 +25,12 @@ class GameState:
 
   def get_value(self):
     if self.betstate.showdown() or not self.betstate.isterminal():
-      return ((self.betstate.get_pot() + 10)*self.cardstate.get_probs()[0] + 0.5*(self.betstate.get_pot() + 10)*self.cardstate.get_probs()[1] - self.betstate.mybet)
+      return ((self.betstate.get_pot() + 10)*self.cardstate.get_probs()[0] + 0.5*(self.betstate.get_pot())*self.cardstate.get_probs()[1] - self.betstate.mybet)
     elif self.betstate.isterminal():
       if self.betstate.myturn:
         return self.betstate.get_pot() - self.betstate.mybet + 10
       else:
-        return -self.betstate.mybet
+        return -self.betstate.mybet - 10
 
   def is_terminal(self):
     return self.betstate.isterminal()
