@@ -79,12 +79,10 @@ def bettest():
   gs = BetState(actions, betround, myturn, 0)
   # print gs.get_successors()
 
-# simul(Agent("expectimax"), Agent("aggressive"), 1)
-# simul(Agent("expectimax"), Agent("passive"), 20) [all 10's]
-# gametest()
-# simul(Agent("expectimax"), Agent("random"), 20)
-# simul(Agent("expectimax"), Agent("aggressive"), 20)
-# simul(Agent("expectimax"), Agent("expectimax"), 20)
-simul(Agent("minimax"), Agent("random"), 20)
-# simul(Agent("minimax"), Agent("expectimax"), 20)
-# simul(Agent("expectimax"), Agent("minimax"), 20)
+def runsimul(agent_type):
+  a = Agent(agent_type)
+  simul(a, Agent("aggressive"), 20)
+  simul(a, Agent("passive"), 20) # [all 10's]
+  simul(a, Agent("random"), 20)
+
+runsimul("minimax")
